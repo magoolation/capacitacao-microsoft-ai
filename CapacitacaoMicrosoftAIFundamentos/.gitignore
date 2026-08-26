@@ -1,0 +1,28 @@
+# Build
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Estado do Visual Studio (inclui transcricoes do Copilot, .suo e indices)
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Configuracao local com segredos ou identificadores do ambiente
+**/Properties/launchSettings.json
+appsettings.Development.json
+appsettings.Local.json
+*.env
+.env
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/

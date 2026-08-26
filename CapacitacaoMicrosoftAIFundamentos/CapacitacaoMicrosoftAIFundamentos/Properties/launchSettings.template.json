@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "CapacitacaoMicrosoftAIFundamentos": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "FOUNDRY_MODEL": "<nome-do-deployment-do-modelo>",
+        "FOUNDRY_ENDPOINT": "https://<recurso>.services.ai.azure.com/api/projects/<projeto>",
+        "AZURE_TENANT_ID": "<guid-do-tenant>",
+        "AZURE_TOKEN_CREDENTIALS": "AzureCliCredential"
+      }
+    }
+  }
+}
