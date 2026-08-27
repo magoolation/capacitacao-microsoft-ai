@@ -17,6 +17,7 @@ O objetivo é mostrar o caminho mínimo — e correto — entre uma aplicação 
 - [Solução de problemas](#solução-de-problemas)
 - [Notas para quem ministra o treinamento](#notas-para-quem-ministra-o-treinamento)
 - [Quando usar outro SDK](#quando-usar-outro-sdk)
+- [Próxima aula](#próxima-aula)
 
 ---
 
@@ -261,3 +262,17 @@ O Foundry SDK não é a única opção. A escolha depende do cenário:
 | **Agent Framework** | Orquestração multi-agente | Responses API via `FoundryChatClient` |
 
 > O endpoint do projeto **não roteia requisições de embeddings**. Se o treinamento avançar para RAG ou busca vetorial, essa parte precisará do SDK da OpenAI apontando para `.../openai/v1`.
+
+---
+
+## Próxima aula
+
+**[LLM e Prompts](../CapacitacaoMicrosoftAILLMePrompts/)** — troca o Foundry SDK pela abstração `IChatClient` (`Microsoft.Extensions.AI`), e é onde o endpoint `.../openai/v1` da tabela acima entra em uso.
+
+| Exemplo | O que demonstra |
+|---|---|
+| Chat simples | Contexto mantido pelo **cliente**, numa `List<ChatMessage>` — o oposto do que esta aula faz |
+| Zero-shot vs Few-shot | A mesma tarefa com e sem exemplos, lado a lado |
+| Structured output | `GetResponseAsync<T>()` devolvendo um `record` C# em vez de texto |
+
+O índice completo das aulas está no [README do repositório](../README.md).

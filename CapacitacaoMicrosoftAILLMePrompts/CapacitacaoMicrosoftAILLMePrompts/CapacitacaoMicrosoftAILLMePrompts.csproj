@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!--
+      OPENAI001: o construtor OpenAIClient(AuthenticationPolicy, ...) está marcado
+      como experimental. É por ele que passamos o token do Entra ID em vez de uma
+      chave de API, então o diagnóstico é esperado e não indica problema.
+      Sem esta linha o projeto NÃO compila: o SDK trata o aviso como erro.
+    -->
+    <NoWarn>$(NoWarn);OPENAI001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.9.0" />
+  </ItemGroup>
+
+</Project>
