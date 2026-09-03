@@ -135,7 +135,7 @@ copy CapacitacaoMicrosoftAIRag\Properties\launchSettings.template.json `
 | `AZURE_TENANT_ID` | Recomendada | GUID do tenant |
 | `AZURE_TOKEN_CREDENTIALS` | Recomendada | Ex.: `AzureCliCredential` |
 
-> O endpoint do Foundry aqui é o `/openai/v1`, como na aula 2 — não o `/api/projects/<projeto>` das aulas 1 e 3.
+> O endpoint do Foundry aqui é o `/openai/v1` — **não** o `/api/projects/<projeto>` das aulas 1, 2 e 3. É o mesmo recurso por outra porta: o `AIProjectClient` daquelas aulas entra pelo projeto, o `OpenAIClient` desta entra pela API compatível com a OpenAI. Reaproveitar o `launchSettings.json` de outra aula aqui dá `404`.
 
 ---
 

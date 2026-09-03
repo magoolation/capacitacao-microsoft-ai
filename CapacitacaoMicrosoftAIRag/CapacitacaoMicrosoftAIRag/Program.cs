@@ -55,7 +55,9 @@ if (string.IsNullOrWhiteSpace(foundryEndpoint) || string.IsNullOrWhiteSpace(mode
 // o Foundry e o AI Search autenticam por Entra ID, com papéis diferentes.
 var credencial = new DefaultAzureCredential();
 
-// Foundry, pelo protocolo da OpenAI — igual à aula de LLM e Prompts.
+// Foundry, pelo protocolo da OpenAI. Diferente das aulas 1 a 3, que entram pelo
+// AIProjectClient: sem o Azure.AI.Projects no .csproj (o comentario la explica por
+// que), o cliente aqui e o OpenAIClient - e por isso o endpoint termina em /openai/v1.
 var tokenPolicy = new BearerTokenPolicy(credencial, "https://ai.azure.com/.default");
 OpenAIClient openAIClient = new(tokenPolicy, new OpenAIClientOptions
 {

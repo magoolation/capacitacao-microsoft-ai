@@ -90,7 +90,7 @@ public sealed class IndiceRag
     {
         try
         {
-            await _indexClient.DeleteIndexAsync(_nomeDoIndice);
+            await _indexClient.DeleteIndexAsync(_nomeDoIndice, CancellationToken.None);
         }
         catch (RequestFailedException e) when (e.Status == 404)
         {
