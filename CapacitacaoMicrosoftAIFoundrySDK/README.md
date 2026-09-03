@@ -55,7 +55,7 @@ O ponto pedagógico: as três linhas de baixo são as **únicas** que diferem. S
 ## Como construir
 
 ```powershell
-cd CapacitacaoMicrosoftAI.FoundrySDK
+cd CapacitacaoMicrosoftAIFoundrySDK
 dotnet restore
 dotnet build
 ```
@@ -126,7 +126,7 @@ copy CapacitacaoMicrosoftAI.FoundrySDK\Properties\launchSettings.template.json `
 
 ```powershell
 az login --tenant <tenant-id>
-cd CapacitacaoMicrosoftAI.FoundrySDK
+cd CapacitacaoMicrosoftAIFoundrySDK
 dotnet run
 ```
 

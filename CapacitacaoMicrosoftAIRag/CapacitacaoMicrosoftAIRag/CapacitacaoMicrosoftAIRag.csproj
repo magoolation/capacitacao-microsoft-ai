@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!--
+      OPENAI001: o construtor OpenAIClient(AuthenticationPolicy, ...) esta marcado
+      como experimental. E por ele que passamos o token do Entra ID em vez de uma
+      chave de API. Sem esta linha o projeto NAO compila.
+    -->
+    <NoWarn>$(NoWarn);OPENAI001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      GRAFO DESTE PROJETO - pivo: OpenAI 2.12.0
+      =========================================
+        Microsoft.Extensions.AI        10.9.0
+        Microsoft.Extensions.AI.OpenAI 10.9.0 -> OpenAI [2.12.0, 2.13.0)
+        Azure.Search.Documents         12.0.0 -> Azure.Core (NAO depende de OpenAI)
+
+      Azure.Search.Documents e neutro: nao traz o pacote OpenAI, entao convive com
+      qualquer pivo. Quem define o pivo aqui e o Microsoft.Extensions.AI.
+
+      NAO adicione Azure.AI.Projects a este csproj: ele exige OpenAI 2.9.1, o NuGet
+      unificaria para 2.12.0 e o projeto quebraria em runtime. Se precisar dos dois
+      juntos, use Microsoft.Extensions.AI.OpenAI 10.4.1 (pivo 2.9.1).
+    -->
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+    <PackageReference Include="Azure.Search.Documents" Version="12.0.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- O corpus viaja junto do binario: a demo roda sem depender de caminho relativo. -->
+    <None Update="Corpus\*.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

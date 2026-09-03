@@ -14,7 +14,7 @@ As três usam a mesma montagem: o **Foundry SDK** (`Azure.AI.Projects`) para che
 |---|---|---|---|
 | 1 | **Fundamentos** | Autenticação sem segredo, do Foundry SDK ao `IChatClient`, contexto no serviço | [`CapacitacaoMicrosoftAIFundamentos`](CapacitacaoMicrosoftAIFundamentos/) |
 | 2 | **LLM e Prompts** | Contexto no cliente, few-shot, structured output | [`CapacitacaoMicrosoftAILLMePrompts`](CapacitacaoMicrosoftAILLMePrompts/) |
-| 3 | **Foundry SDK com streaming** | `GetStreamingResponseAsync`, resposta token a token | [`CapacitacaoMicrosoftAI.FoundrySDK`](CapacitacaoMicrosoftAI.FoundrySDK/) |
+| 3 | **Foundry SDK com streaming** | `GetStreamingResponseAsync`, resposta token a token | [`CapacitacaoMicrosoftAI.FoundrySDK`](CapacitacaoMicrosoftAIFoundrySDK/) |
 
 ---
 
@@ -44,11 +44,27 @@ Três demos sobre **os mesmos três chamados de suporte** — a repetição da e
 
 ### Aula 3 — Foundry SDK com streaming
 
-📖 [README da aula](CapacitacaoMicrosoftAI.FoundrySDK/README.md) · 💻 [`Program.cs`](CapacitacaoMicrosoftAI.FoundrySDK/CapacitacaoMicrosoftAI.FoundrySDK/Program.cs)
+📖 [README da aula](CapacitacaoMicrosoftAIFoundrySDK/README.md) · 💻 [`Program.cs`](CapacitacaoMicrosoftAIFoundrySDK/CapacitacaoMicrosoftAI.FoundrySDK/Program.cs)
 
 | Exemplo | O que demonstra |
 |---|---|
 | **Chat com streaming** | O mesmo setup da aula 1, com a resposta chegando token a token em `ChatResponseUpdate` — a diferença cabe no laço final |
+
+### Aula 4 — RAG com Azure AI Search
+
+📖 [README da aula](CapacitacaoMicrosoftAIRag/README.md) · 💻 [`Program.cs`](CapacitacaoMicrosoftAIRag/CapacitacaoMicrosoftAIRag/Program.cs) · 🔧 [scripts de provisionamento](CapacitacaoMicrosoftAIRag/scripts/)
+
+Um corpus de políticas internas de uma empresa fictícia, escrito de propósito para que algumas perguntas só ele responda — e para que **uma pergunta pareça estar nele e não esteja**.
+
+| # | Exemplo | O que demonstra |
+|---|---|---|
+| 1 | Indexação | Chunking por parágrafo, embeddings em lote e upload para o índice |
+| 2 | Três modos de busca | Keyword, vetorial e híbrida com reranking, lado a lado e com os scores à vista |
+| 3 | Com × sem RAG | A mesma pergunta nos dois modos, no mesmo modelo, com citações verificáveis |
+
+O [roteiro de sala](CapacitacaoMicrosoftAIRag/README.md#o-roteiro-de-sala) tem três perguntas em ordem deliberada: a que só o corpus responde, a de conhecimento geral (onde RAG não ajuda) e a que parece estar no corpus mas não está.
+
+O script `provisionar-ai-search.ps1` (e o `.sh` equivalente) cria o serviço de busca e concede os dois papéis necessários.
 
 ---
 
@@ -120,12 +136,13 @@ Por isso os `dotnet add package` deste repositório levam sempre `--version` exp
 dotnet --version   # deve responder 10.x
 ```
 
-**2. Compile as três soluções antes da aula:**
+**2. Compile as quatro soluções antes da aula:**
 
 ```powershell
 dotnet build CapacitacaoMicrosoftAIFundamentos\CapacitacaoMicrosoftAIFundamentos.slnx
 dotnet build CapacitacaoMicrosoftAILLMePrompts\CapacitacaoMicrosoftAILLMePrompts.slnx
-dotnet build CapacitacaoMicrosoftAI.FoundrySDK\CapacitacaoMicrosoftAI.FoundrySDK.slnx
+dotnet build CapacitacaoMicrosoftAIFoundrySDK\CapacitacaoMicrosoftAI.FoundrySDK.slnx
+dotnet build CapacitacaoMicrosoftAIRag\CapacitacaoMicrosoftAIRag.slnx
 ```
 
 **3. Configure o `launchSettings.json` de cada aula** a partir do `launchSettings.template.json` correspondente — ele não é versionado. O endpoint é o mesmo nas três; só o nome do perfil muda.

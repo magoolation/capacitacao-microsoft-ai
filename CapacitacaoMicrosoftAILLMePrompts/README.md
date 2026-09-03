@@ -376,7 +376,7 @@ O que `IChatClient` abre e que este projeto não usa:
 
 | Recurso | Como entra |
 |---|---|
-| **Streaming** | `GetStreamingResponseAsync()` — resposta token a token, é a [aula 3](../CapacitacaoMicrosoftAI.FoundrySDK/) |
+| **Streaming** | `GetStreamingResponseAsync()` — resposta token a token, é a [aula 3](../CapacitacaoMicrosoftAIFoundrySDK/) |
 | **Function calling** | `ChatOptions.Tools` + `.UseFunctionInvocation()` |
 | **Cache** | `.UseDistributedCache()` na `ChatClientBuilder` |
 | **Telemetria** | `.UseOpenTelemetry()` — rastreio de prompts, tokens e latência |
@@ -388,6 +388,6 @@ Todos são decoradores sobre o mesmo `IChatClient`: entram sem alterar o código
 
 ## Próxima aula
 
-**[Foundry SDK com streaming](../CapacitacaoMicrosoftAI.FoundrySDK/)** — o mesmo setup destas três seções iniciais, com a resposta chegando token a token e o histórico de volta ao serviço.
+**[Foundry SDK com streaming](../CapacitacaoMicrosoftAIFoundrySDK/)** — o mesmo setup destas três seções iniciais, com a resposta chegando token a token e o histórico de volta ao serviço.
 
 O índice completo das aulas está no [README do repositório](../README.md).
