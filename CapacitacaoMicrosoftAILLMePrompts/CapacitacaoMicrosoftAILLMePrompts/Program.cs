@@ -4,20 +4,22 @@
 // abstração IChatClient (Microsoft.Extensions.AI).
 //
 // O que este exemplo demonstra:
-//   1. Como configurar um IChatClient apontando para o Foundry.
-//   2. Como o histórico da conversa vive no CLIENTE, numa List<ChatMessage>.
-//   3. Few-shot prompting: ensinar o formato da resposta por exemplos.
-//   4. Structured output: receber um record C# tipado em vez de texto solto.
+//   1. Como o histórico da conversa pode viver no CLIENTE, numa List<ChatMessage>.
+//   2. Few-shot prompting: ensinar o formato da resposta por exemplos.
+//   3. Structured output: receber um record C# tipado em vez de texto solto.
 //
-// Continuação da aula anterior (Fundamentos), que usava o Foundry SDK e a
-// Responses API. Aqui trocamos de camada — veja a seção "Duas camadas" no
-// README para entender quando usar cada uma.
+// O setup (seções 1 a 3) é IDÊNTICO ao da aula de Fundamentos: mesmo Foundry
+// SDK, mesmo endpoint, mesma identidade, mesmo IChatClient. Esta aula não troca
+// de camada — ela troca o que se faz com a camada. Veja a seção "O fio entre as
+// aulas" no README da raiz.
 // =============================================================================
 
-// System.ClientModel.Primitives: camada de transporte comum aos SDKs novos da
-// Microsoft e da OpenAI. É de lá que vem BearerTokenPolicy, a peça que injeta
-// o token do Entra ID em cada requisição HTTP.
-using System.ClientModel.Primitives;
+// Azure.AI.Projects: o "Foundry SDK". Porta de entrada do projeto.
+using Azure.AI.Projects;
+
+// Azure.AI.Extensions.OpenAI: os clientes que falam "dialeto OpenAI" já
+// apontados para o seu projeto Foundry.
+using Azure.AI.Extensions.OpenAI;
 
 // Azure.Identity: descobre "quem é você" a partir do ambiente
 // (az login, Visual Studio, identidade gerenciada em produção...).
@@ -28,21 +30,18 @@ using Azure.Identity;
 // Nada aqui é específico de OpenAI, Foundry, Ollama ou Anthropic.
 using Microsoft.Extensions.AI;
 
-// OpenAI: a implementação concreta. OpenAIClient fala o protocolo da OpenAI —
-// que é o mesmo protocolo exposto pelo endpoint /openai/v1 do Foundry.
-using OpenAI;
-
 // -----------------------------------------------------------------------------
 // 1. Configuração
 // -----------------------------------------------------------------------------
 // Nada fica escrito no código: endpoint e modelo vêm de variáveis de ambiente.
 // Em desenvolvimento elas são definidas em Properties/launchSettings.json.
 
-// ATENÇÃO: este endpoint é DIFERENTE do usado na aula anterior.
-//   Aula anterior (Foundry SDK): https://<recurso>.services.ai.azure.com/api/projects/<projeto>
-//   Esta aula    (OpenAI SDK):   https://<recurso>.services.ai.azure.com/openai/v1
-// Trocar de SDK significa trocar de endpoint. Confundir os dois é o tropeço
-// mais comum ao migrar código entre as duas aulas.
+// Endpoint DO PROJETO:
+//   https://<recurso>.services.ai.azure.com/api/projects/<projeto>
+// O mesmo das outras aulas. (Se você acompanhou uma versão anterior deste
+// material, este endpoint mudou: antes esta aula usava /openai/v1, porque
+// falava com o SDK da OpenAI direto. Agora ela entra pelo Foundry SDK como as
+// outras, e um único endpoint serve as três.)
 var endpoint = Environment.GetEnvironmentVariable("FOUNDRY_ENDPOINT");
 
 // Nome do DEPLOYMENT do modelo no Foundry — não é o nome comercial do modelo.
@@ -59,41 +58,32 @@ if (string.IsNullOrWhiteSpace(endpoint) || string.IsNullOrWhiteSpace(model))
 // -----------------------------------------------------------------------------
 // 2. Autenticação
 // -----------------------------------------------------------------------------
-// O SDK da OpenAI foi feito para o serviço da OpenAI, onde autenticação é uma
-// chave de API. O Foundry aceita chave, mas o caminho correto é Entra ID.
+// O Foundry SDK autentica SEMPRE por Entra ID — não existe construtor que
+// aceite chave de API. Não há segredo para vazar em código, log ou repositório.
 //
-// A ponte entre os dois mundos é BearerTokenPolicy: ela recebe uma credencial
-// do Azure, pede um token para o escopo informado e o coloca no cabeçalho
-// Authorization de cada chamada. O SDK da OpenAI nem sabe que isso aconteceu.
-//
-// O escopo é sempre este, fixo, para qualquer recurso de Cognitive Services ou
-// Foundry. Não é o seu endpoint — é o identificador do serviço no Entra ID.
-BearerTokenPolicy tokenPolicy = new(
-    new DefaultAzureCredential(),
-    "https://cognitiveservices.azure.com/.default");
+// Autenticar (provar quem você é) não é o mesmo que autorizar (ter permissão):
+// sua conta precisa do papel "Foundry User" no recurso. Ser Owner da
+// subscription NÃO basta.
+AIProjectClient projectClient = new(
+    endpoint: new Uri(endpoint),
+    tokenProvider: new DefaultAzureCredential());
 
 // -----------------------------------------------------------------------------
-// 3. IChatClient apontando para o Foundry
+// 3. Do Foundry SDK até IChatClient
 // -----------------------------------------------------------------------------
 // Três camadas, de baixo para cima:
 //
-//   OpenAIClient             → cliente do serviço inteiro (chat, embeddings...)
-//      └── ChatClient        → cliente de UM deployment de modelo
-//             └── IChatClient → a abstração neutra que o resto do código usa
+//   AIProjectClient              → porta de entrada do projeto Foundry
+//      └── ProjectResponsesClient → cliente da Responses API para UM deployment
+//             └── IChatClient     → a abstração neutra que o resto do código usa
 //
-// A propriedade Endpoint é o que redireciona o SDK da OpenAI para o Foundry.
-// Sem ela, o cliente chamaria api.openai.com.
-OpenAIClient openAIClient = new(tokenPolicy, new OpenAIClientOptions
-{
-    Endpoint = new Uri(endpoint)
-});
+// Daqui para baixo é Azure; daqui para cima o código não menciona mais nem
+// Azure nem OpenAI. Todas as demos abaixo usam só `chatClient` — é por isso que
+// elas rodariam sem alteração contra um Ollama local ou outro provedor.
+ProjectResponsesClient responseClient = projectClient.ProjectOpenAIClient
+    .GetProjectResponsesClientForModel(model);
 
-// AsIChatClient() é o adaptador. A partir daqui o código não menciona mais
-// OpenAI nem Azure: trocar o modelo por um Ollama local ou por outro provedor
-// é mexer nas linhas acima, e em nada mais.
-IChatClient chatClient = openAIClient
-    .GetChatClient(model)
-    .AsIChatClient();
+IChatClient chatClient = responseClient.AsIChatClient(model);
 
 // -----------------------------------------------------------------------------
 // 4. Dados de apoio
@@ -133,17 +123,19 @@ while (true)
 // =============================================================================
 // DEMO 1 — Chat simples: quem guarda o histórico?
 // =============================================================================
-// Contraste direto com a aula anterior.
+// Contraste direto com a aula de Fundamentos — e repare que o cliente é o
+// MESMO. Quem muda é a estratégia:
 //
-//   Responses API (aula anterior): o SERVIÇO guarda a conversa. O código
-//   mantinha apenas uma string com o Id da resposta anterior.
+//   Fundamentos: o SERVIÇO guarda a conversa. O código mantinha apenas um
+//   ChatOptions com o ConversationId da resposta anterior.
 //
-//   IChatClient (esta aula): o CLIENTE guarda a conversa. O código mantém uma
-//   List<ChatMessage> que cresce, e ela inteira trafega a cada pergunta.
+//   Aqui: o CLIENTE guarda a conversa. O código mantém uma List<ChatMessage>
+//   que cresce, e ela inteira trafega a cada pergunta. Nenhum ConversationId é
+//   enviado — por isso o serviço trata cada chamada como independente.
 //
 // Nenhum dos dois é "melhor". O cliente guardando dá controle total sobre o que
 // entra no contexto — e é exatamente esse controle que torna possível o
-// few-shot da demo 2.
+// few-shot da demo 2, onde inventamos um histórico que nunca aconteceu.
 async Task ChatSimplesAsync()
 {
     // A primeira mensagem é a de sistema (system prompt): define papel, tom e

@@ -1,8 +1,8 @@
 # Capacitação Microsoft AI — Fundamentos
 
-Chat de console em .NET que conversa com um modelo hospedado no **Microsoft Foundry**, usando o **Foundry SDK** e autenticação por **Entra ID**.
+Chat de console em .NET que conversa com um modelo hospedado no **Microsoft Foundry**, usando o **Foundry SDK** para chegar ao projeto com autenticação por **Entra ID**, e **`Microsoft.Extensions.AI`** (`IChatClient`) como camada de programação.
 
-O objetivo é mostrar o caminho mínimo — e correto — entre uma aplicação .NET e um modelo no Foundry.
+O objetivo é mostrar o caminho mínimo — e correto — entre uma aplicação .NET e um modelo no Foundry. Essa mesma montagem se repete nas três aulas do repositório: o que muda de uma para outra é o que se faz com o `IChatClient`, não como ele é criado.
 
 ---
 
@@ -12,6 +12,7 @@ O objetivo é mostrar o caminho mínimo — e correto — entre uma aplicação 
 - [Pré-requisitos](#pré-requisitos)
 - [Permissões (RBAC) — leia antes de rodar](#permissões-rbac--leia-antes-de-rodar)
 - [Configuração](#configuração)
+- [Como construir](#como-construir)
 - [Como executar](#como-executar)
 - [Como o código funciona](#como-o-código-funciona)
 - [Solução de problemas](#solução-de-problemas)
@@ -24,8 +25,8 @@ O objetivo é mostrar o caminho mínimo — e correto — entre uma aplicação 
 ## O que este projeto demonstra
 
 1. **Autenticação sem segredo.** Nenhuma chave de API no código — a identidade vem do Entra ID.
-2. **Chamada a um modelo pela Responses API**, através do endpoint do projeto Foundry.
-3. **Contexto de conversa mantido pelo serviço**, não pelo cliente. O programa guarda apenas uma `string`.
+2. **A ponte entre os dois SDKs.** `AsIChatClient()` transforma o cliente de Responses do Foundry num `IChatClient` — daí para cima o código não menciona mais nem Azure nem OpenAI.
+3. **Contexto de conversa mantido pelo serviço**, não pelo cliente. O programa guarda apenas um `ChatOptions.ConversationId`.
 
 ---
 
@@ -45,8 +46,10 @@ Pacotes NuGet (restaurados automaticamente no build):
 | `Azure.AI.Projects` | 2.0.1 | Foundry SDK — acesso ao projeto |
 | `Azure.AI.Extensions.OpenAI` | 2.0.0 | Clientes no formato OpenAI apontados ao projeto |
 | `Azure.Identity` | 1.21.0 | Resolução da credencial do Entra ID |
+| `Microsoft.Extensions.AI` | 10.4.1 | A abstração: `IChatClient`, `ChatMessage`, `ChatOptions` |
+| `Microsoft.Extensions.AI.OpenAI` | 10.4.1 | O adaptador `AsIChatClient()` |
 
-> **Não adicione o pacote `OpenAI` explicitamente.** Ele já vem como dependência transitiva na versão correta (2.9.1). Fixar uma versão mais nova causa `MissingMethodException` em tempo de execução — o projeto compila e quebra ao rodar. Detalhes em [Solução de problemas](#solução-de-problemas).
+> **Não adicione o pacote `OpenAI` explicitamente, e não suba as duas versões `10.4.1`.** O `OpenAI` já vem como dependência transitiva na versão correta (2.9.1), e `10.4.1` é a única versão de `Microsoft.Extensions.AI` cujo pino é essa mesma 2.9.1. Qualquer uma das duas mudanças causa `MissingMethodException` em tempo de execução — o projeto compila e quebra ao rodar. Detalhes em [Solução de problemas](#solução-de-problemas).
 
 ---
 
@@ -134,6 +137,70 @@ Fixar as duas variáveis torna o comportamento determinístico. O custo é que `
 
 ---
 
+## Como construir
+
+**1. Confirme o SDK.** O repositório inteiro tem como alvo `net10.0`.
+
+```powershell
+dotnet --version   # deve responder 10.x
+```
+
+**2. Restaure e compile a partir da pasta da solução:**
+
+```powershell
+cd CapacitacaoMicrosoftAIFundamentos
+dotnet restore
+dotnet build
+```
+
+Abrindo pelo Visual Studio, use `CapacitacaoMicrosoftAIFundamentos.slnx` — cada aula é uma solução independente, e é de propósito: assim o grafo de pacotes de uma aula não contamina o da outra.
+
+**3. Não mexa nas versões de pacote.** Este projeto converge para um pivô único, **`OpenAI 2.9.1`**:
+
+| Pacote declarado | Versão | Traz `OpenAI` |
+|---|---|---|
+| `Azure.AI.Projects` | 2.0.1 | 2.9.1 (via `Azure.AI.Projects.Agents` 2.0.0) |
+| `Azure.AI.Extensions.OpenAI` | 2.0.0 | 2.9.1 |
+| `Azure.Identity` | 1.21.0 | — |
+| `Microsoft.Extensions.AI` | 10.4.1 | — (só `Microsoft.Extensions.AI.Abstractions`) |
+| `Microsoft.Extensions.AI.OpenAI` | 10.4.1 | 2.9.1 |
+
+**A escolha do `10.4.1` é o que faz os dois stacks caberem no mesmo `.csproj`.** É a única versão de `Microsoft.Extensions.AI.OpenAI` cujo pino é `OpenAI 2.9.1` — o mesmo contra o qual os assemblies do Azure foram compilados:
+
+| Versão de `Microsoft.Extensions.AI.OpenAI` | Exige `OpenAI` |
+|---|---|
+| 10.3.0 | 2.8.0 |
+| **10.4.1** | **2.9.1** (a que usamos) |
+| 10.5.0 … 10.6.0 | 2.10.0 |
+| 10.9.0 | [2.12.0, 2.13.0) |
+
+Três comandos comuns quebram este projeto **em runtime, sem erro de compilação**:
+
+```powershell
+dotnet add package OpenAI                                  # sobe para 2.12.0
+dotnet add package Azure.AI.Extensions.OpenAI --prerelease # 3.0.0-beta.1 exige OpenAI 2.12.0
+dotnet add package Microsoft.Extensions.AI.OpenAI          # sem --version, pega a mais nova
+```
+
+O pacote `OpenAI` quebra compatibilidade binária a cada minor do 2.x mantendo a mesma *assembly version*: o NuGet unifica para a maior versão e os assemblies do Azure, compilados contra 2.9.1, estouram com `MissingMethodException`.
+
+Para mexer nos pacotes de `Microsoft.Extensions.AI`, sempre com versão explícita — e conferindo o pino antes:
+
+```powershell
+dotnet add package Microsoft.Extensions.AI.OpenAI --version 10.4.1
+```
+
+**4. Conferindo o grafo quando algo cheirar mal:**
+
+```powershell
+dotnet nuget why CapacitacaoMicrosoftAIFundamentos\CapacitacaoMicrosoftAIFundamentos.csproj OpenAI
+dotnet list package --include-transitive
+```
+
+O `Directory.Build.props` na raiz do repositório promove `NU1605`, `NU1608` e `NU1109` a **erro**, para que esse tipo de divergência apareça no `restore` em vez de na frente da turma.
+
+---
+
 ## Como executar
 
 **1. Autentique no tenant correto:**
@@ -170,23 +237,31 @@ A segunda resposta é a demonstração central: o modelo lembrou do nome **sem q
 ## Como o código funciona
 
 ```
-AIProjectClient                        ← porta de entrada (endpoint + credencial)
+AIProjectClient                          ← porta de entrada (endpoint + credencial)
    └── ProjectOpenAIClient
-          └── ProjectResponsesClient   ← cliente do modelo escolhido
-                 └── CreateResponseAsync(pergunta, previousResponseId)
+          └── ProjectResponsesClient     ← cliente do modelo escolhido
+                 └── .AsIChatClient(model)
+                        └── IChatClient  ← daqui para cima, código neutro
+                               └── GetResponseAsync(pergunta, options)
 ```
+
+Essas linhas são **idênticas nas três aulas**. Vale reparar no que elas fazem, e no que não fazem: separam uma credencial do Azure de um `IChatClient` pronto para uso, e nada além disso.
+
+`ProjectResponsesClient` herda de `OpenAI.Responses.ResponsesClient`, e é isso que permite ao `AsIChatClient()` — que vem de `Microsoft.Extensions.AI.OpenAI` — aceitá-lo. Esse método ainda está marcado como experimental, e é por ele que o `.csproj` precisa de `<NoWarn>$(NoWarn);OPENAI001</NoWarn>`: sem essa linha o projeto não compila.
 
 ### Memória da conversa
 
-| | Chat Completions (clássico) | Responses API (aqui) |
+| | Histórico no cliente | Responses API (aqui) |
 |---|---|---|
 | Quem guarda o histórico | O cliente | O serviço |
-| O que o código mantém | `List<ChatMessage>` crescente | Uma `string` com o Id |
+| O que o código mantém | `List<ChatMessage>` crescente | Um `ChatOptions.ConversationId` |
 | O que trafega por chamada | A conversa inteira | Só a pergunta nova |
 
-Cada resposta traz um `Id`. Ao enviar a próxima pergunta junto com esse `Id`, o serviço reconstrói o contexto.
+Cada resposta volta com um `ConversationId`. Ao enviar a próxima pergunta junto com ele, o serviço reconstrói o contexto.
 
-> **Experimento sugerido em sala:** comente a linha `previousResponseId = resposta.Value.Id;` e rode de novo. O chat passa a esquecer tudo a cada mensagem — a forma mais rápida de entender o que essa linha faz.
+O que vale sublinhar: **o `IChatClient` suporta as duas estratégias da tabela** — é a mesma interface, o mesmo cliente. Preencher `options.ConversationId` delega o histórico ao serviço; passar uma `List<ChatMessage>` sem `ConversationId` mantém tudo no cliente. A aula de LLM e Prompts faz o segundo caminho, sem trocar nada do setup.
+
+> **Experimento sugerido em sala:** comente a linha `options.ConversationId = resposta.ConversationId;` e rode de novo. O chat passa a esquecer tudo a cada mensagem — a forma mais rápida de entender o que essa linha faz.
 
 ---
 
@@ -267,11 +342,11 @@ O Foundry SDK não é a única opção. A escolha depende do cenário:
 
 ## Próxima aula
 
-**[LLM e Prompts](../CapacitacaoMicrosoftAILLMePrompts/)** — troca o Foundry SDK pela abstração `IChatClient` (`Microsoft.Extensions.AI`), e é onde o endpoint `.../openai/v1` da tabela acima entra em uso.
+**[LLM e Prompts](../CapacitacaoMicrosoftAILLMePrompts/)** — mantém exatamente esta montagem (mesmo SDK, mesmo endpoint, mesmo `IChatClient`) e muda o que se faz com ela: técnicas de prompt.
 
 | Exemplo | O que demonstra |
 |---|---|
-| Chat simples | Contexto mantido pelo **cliente**, numa `List<ChatMessage>` — o oposto do que esta aula faz |
+| Chat simples | Contexto mantido pelo **cliente**, numa `List<ChatMessage>` — o oposto desta aula, com o mesmo cliente |
 | Zero-shot vs Few-shot | A mesma tarefa com e sem exemplos, lado a lado |
 | Structured output | `GetResponseAsync<T>()` devolvendo um `record` C# em vez de texto |
 

@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "CapacitacaoMicrosoftAILLMePrompts": {
+    "CapacitacaoMicrosoftAI.FoundrySDK": {
       "commandName": "Project",
       "environmentVariables": {
         "FOUNDRY_MODEL": "<nome-do-deployment-do-modelo>",

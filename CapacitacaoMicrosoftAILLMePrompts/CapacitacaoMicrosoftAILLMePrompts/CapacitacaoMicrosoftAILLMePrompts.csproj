@@ -7,18 +7,50 @@
     <Nullable>enable</Nullable>
 
     <!--
-      OPENAI001: o construtor OpenAIClient(AuthenticationPolicy, ...) está marcado
-      como experimental. É por ele que passamos o token do Entra ID em vez de uma
-      chave de API, então o diagnóstico é esperado e não indica problema.
-      Sem esta linha o projeto NÃO compila: o SDK trata o aviso como erro.
+      OPENAI001: o metodo AsIChatClient(ResponsesClient, string) - a ponte entre
+      o cliente do Foundry e IChatClient - esta marcado como experimental. E por
+      ele que todo este repositorio passa, entao o diagnostico e esperado.
+      Sem esta linha o projeto NAO compila: o SDK trata o aviso como erro.
     -->
     <NoWarn>$(NoWarn);OPENAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <!--
+      GRAFO DESTE PROJETO - pivo unico: OpenAI 2.9.1
+      ==============================================
+        Azure.AI.Projects 2.0.1
+          -> Azure.AI.Extensions.OpenAI 2.0.0 -> OpenAI 2.9.1
+          -> Azure.AI.Projects.Agents   2.0.0 -> OpenAI 2.9.1
+        Microsoft.Extensions.AI        10.4.1
+        Microsoft.Extensions.AI.OpenAI 10.4.1 -> OpenAI 2.9.1
+
+      As tres aulas deste repositorio usam EXATAMENTE este conjunto: o Foundry
+      SDK para autenticar e alcancar o projeto, e Microsoft.Extensions.AI como
+      camada de programacao (IChatClient).
+
+      A versao 10.4.1 nao e arbitraria - e a UNICA de Microsoft.Extensions.AI
+      cujo pino de OpenAI e 2.9.1, o mesmo contra o qual os assemblies Azure
+      foram compilados. Fora dela os dois stacks nao cabem no mesmo csproj:
+
+        10.3.0            -> OpenAI 2.8.0
+        10.4.1            -> OpenAI 2.9.1   (a versao que usamos)
+        10.5.0 .. 10.6.0  -> OpenAI 2.10.0
+        10.9.0            -> OpenAI [2.12.0, 2.13.0)
+
+      O NuGet unifica para a maior versao, entao subir Microsoft.Extensions.AI
+      arrasta o OpenAI para cima e quebra os assemblies Azure EM RUNTIME, com
+      MissingMethodException - sem nenhum erro de compilacao.
+
+      Pela mesma razao, NAO declare o pacote OpenAI a mao neste csproj e NAO peca
+      a versao prerelease do Azure.AI.Extensions.OpenAI: a linha 3.0.0-beta.1
+      exige OpenAI 2.12.0 e recria o conflito.
+    -->
+    <PackageReference Include="Azure.AI.Projects" Version="2.0.1" />
+    <PackageReference Include="Azure.AI.Extensions.OpenAI" Version="2.0.0" />
     <PackageReference Include="Azure.Identity" Version="1.21.0" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="10.9.0" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.4.1" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.4.1" />
   </ItemGroup>
 
 </Project>

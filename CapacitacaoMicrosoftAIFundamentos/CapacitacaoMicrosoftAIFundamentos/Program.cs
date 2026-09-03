@@ -4,8 +4,13 @@
 //
 // O que este exemplo demonstra:
 //   1. Como autenticar no Foundry usando identidade do Entra ID (sem chave).
-//   2. Como chamar um modelo pela Responses API.
+//   2. Como montar um IChatClient (Microsoft.Extensions.AI) sobre o Foundry SDK.
 //   3. Como manter o contexto da conversa SEM guardar histórico no cliente.
+//
+// As três aulas do repositório usam esta mesma montagem: o Foundry SDK para
+// chegar ao projeto com a identidade do Entra ID, e Microsoft.Extensions.AI
+// como camada de programação. O que muda de uma aula para outra é o que se faz
+// com o IChatClient — não como ele é criado.
 // =============================================================================
 
 // Azure.AI.Projects: o "Foundry SDK". Dá acesso a tudo que é do projeto
@@ -20,6 +25,11 @@ using Azure.AI.Extensions.OpenAI;
 // (az login, Visual Studio, identidade gerenciada em produção...).
 using Azure.Identity;
 
+// Microsoft.Extensions.AI: a abstração. IChatClient, ChatMessage, ChatOptions e
+// os métodos de extensão GetResponseAsync / GetStreamingResponseAsync.
+// Nada aqui é específico de OpenAI, Foundry, Ollama ou Anthropic.
+using Microsoft.Extensions.AI;
+
 // -----------------------------------------------------------------------------
 // 1. Configuração
 // -----------------------------------------------------------------------------
@@ -29,8 +39,7 @@ using Azure.Identity;
 
 // Endpoint DO PROJETO, no formato:
 //   https://<recurso>.services.ai.azure.com/api/projects/<projeto>
-// Atenção: não é o mesmo endpoint usado pelo SDK da OpenAI puro
-// (aquele seria https://<recurso>.services.ai.azure.com/openai/v1).
+// É o mesmo nas três aulas, porque as três entram pelo Foundry SDK.
 var endpoint = Environment.GetEnvironmentVariable("FOUNDRY_ENDPOINT");
 
 // Nome do DEPLOYMENT do modelo no Foundry — não é o nome comercial do modelo.
@@ -65,28 +74,40 @@ AIProjectClient projectClient = new(
     tokenProvider: new DefaultAzureCredential());
 
 // -----------------------------------------------------------------------------
-// 3. Cliente do modelo
+// 3. Do Foundry SDK até IChatClient
 // -----------------------------------------------------------------------------
-// AIProjectClient é a porta de entrada do projeto. A partir dele você alcança
-// as várias capacidades; aqui queremos conversar com um modelo, então pedimos
-// um cliente de Responses já vinculado ao deployment escolhido.
+// Três camadas, de baixo para cima:
+//
+//   AIProjectClient            → porta de entrada do projeto Foundry
+//      └── ProjectResponsesClient → cliente da Responses API para UM deployment
+//             └── IChatClient      → a abstração neutra que o resto do código usa
+//
+// AsIChatClient() é o adaptador entre os dois mundos. Daqui para baixo é Azure;
+// daqui para cima o código não menciona mais nem Azure nem OpenAI — trocar o
+// modelo por um Ollama local é mexer nestas linhas, e em nada mais.
+//
+// (É este método que exige o NoWarn OPENAI001 no .csproj: ele ainda está
+// marcado como experimental no pacote.)
 ProjectResponsesClient responseClient = projectClient.ProjectOpenAIClient
     .GetProjectResponsesClientForModel(model);
+
+IChatClient chatClient = responseClient.AsIChatClient(model);
 
 // -----------------------------------------------------------------------------
 // 4. Memória da conversa
 // -----------------------------------------------------------------------------
 // Este é o ponto mais interessante do exemplo.
 //
-// Na API clássica (Chat Completions) o CLIENTE guarda a conversa: você mantém
-// uma List<ChatMessage> e reenvia tudo a cada pergunta.
+// Por baixo do IChatClient está a Responses API, e nela quem guarda a conversa
+// é o SERVIÇO. Cada resposta volta com um identificador; ao enviar a próxima
+// pergunta você devolve esse identificador e o modelo recebe todo o contexto.
 //
-// Na Responses API o SERVIÇO guarda. Cada resposta tem um Id; ao enviar a
-// próxima pergunta você informa o Id anterior e o modelo recebe todo o
-// contexto. Por isso a única coisa que precisamos lembrar é uma string.
+// Em Microsoft.Extensions.AI isso aparece como ChatOptions.ConversationId. Por
+// isso a única coisa que precisamos lembrar entre uma pergunta e outra é uma
+// string — não uma lista que cresce.
 //
 // Começa null porque a primeira pergunta não tem nada antes dela.
-string? previousResponseId = null;
+ChatOptions options = new();
 
 // -----------------------------------------------------------------------------
 // 5. Laço de conversa
@@ -110,17 +131,17 @@ while (true)
         break;
     }
 
-    // A chamada de rede. Note que enviamos apenas a pergunta ATUAL mais o Id
-    // da resposta anterior — o histórico não trafega.
+    // A chamada de rede. Note que enviamos apenas a pergunta ATUAL mais o
+    // ConversationId da resposta anterior — o histórico não trafega.
     // Usamos a versão Async para não bloquear a thread enquanto o modelo pensa.
-    var resposta = await responseClient.CreateResponseAsync(prompt, previousResponseId);
+    var resposta = await chatClient.GetResponseAsync(prompt, options);
 
-    // Guardamos o Id desta resposta: ele será o elo da próxima pergunta.
-    // Remover esta linha faz o chat "esquecer" tudo a cada mensagem —
+    // Guardamos o identificador desta resposta: ele será o elo da próxima
+    // pergunta. Remover esta linha faz o chat "esquecer" tudo a cada mensagem —
     // vale testar em sala para ver a diferença na prática.
-    previousResponseId = resposta.Value.Id;
+    options.ConversationId = resposta.ConversationId;
 
     // A resposta pode conter vários itens de saída (texto, chamadas de
-    // ferramenta, etc.). GetOutputText() concatena só a parte textual.
-    Console.WriteLine($"IA: {resposta.Value.GetOutputText()}\n");
+    // ferramenta, etc.). .Text concatena só a parte textual.
+    Console.WriteLine($"IA: {resposta.Text}\n");
 }

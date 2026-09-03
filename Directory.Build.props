@@ -1,0 +1,22 @@
+<Project>
+
+  <!--
+    Higiene de dependencias para TODAS as solucoes deste repositorio.
+    ================================================================
+    O erro mais caro deste curso (Azure.AI.* + Microsoft.Extensions.AI
+    convergindo em versoes diferentes do pacote OpenAI) COMPILA sem reclamar e
+    quebra em runtime com MissingMethodException. As duas regras abaixo fazem
+    ele aparecer no restore, que e onde da para consertar:
+
+      NU1605 - package downgrade
+      NU1608 - versao resolvida fora do intervalo que um pacote declarou
+      NU1109 - downgrade em pacote transitivo
+
+    Se alguma delas disparar num cenario legitimo, remova o codigo da lista
+    abaixo em vez de desligar tudo.
+  -->
+  <PropertyGroup>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1605;NU1608;NU1109</WarningsAsErrors>
+  </PropertyGroup>
+
+</Project>
