@@ -104,7 +104,7 @@ O que muda é o que cada aula faz com `chatClient`:
 
 A **aula 4** sai desse fio de propósito: para usar o `Microsoft.Extensions.AI` mais novo ela não pode carregar o `Azure.AI.Projects` no mesmo `.csproj`, e monta o `OpenAIClient` direto sobre o mesmo recurso Foundry.
 
-> **Um único `FOUNDRY_ENDPOINT` serve as aulas 1, 2 e 3**, porque as três entram pelo `AIProjectClient` e pedem o endpoint do projeto: `.../api/projects/<projeto>`. **A aula 4 pede outro caminho no mesmo recurso**, `.../openai/v1`, que é o que o `OpenAIClient` entende. Não são dois recursos — é o mesmo, por duas portas. Reaproveitar o `launchSettings.json` de uma aula na outra dá `404`.
+> **Um único `FOUNDRY_ENDPOINT` serve as aulas 1, 2 e 3**, porque as três entram pelo `AIProjectClient` e pedem o endpoint do projeto: `.../api/projects/<projeto>`. **A aula 4 pede outro caminho no mesmo recurso**, `.../openai/v1`, que é o que o `OpenAIClient` entende. Não são dois recursos — é o mesmo, por duas portas. Reaproveitar o `launchSettings.json` de uma aula na outra quebra: o endpoint do projeto na aula 4 dá `400 Missing required query parameter: api-version`.
 
 ---
 

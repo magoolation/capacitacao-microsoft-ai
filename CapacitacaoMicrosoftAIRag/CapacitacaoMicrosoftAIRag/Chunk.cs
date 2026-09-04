@@ -10,10 +10,18 @@
 // schema escrito à mão que possa divergir do modelo.
 //
 // Atenção ao nome dos campos NO ÍNDICE: o serializador padrão do
-// Azure.Search.Documents é camelCase, então `Conteudo` vira `conteudo`. É esse
-// nome minúsculo que aparece em SearchOptions.Select, no VectorizedQuery.Fields
-// e na configuração semântica.
+// Azure.Search.Documents NÃO converte para camelCase — ele usa o nome da
+// propriedade C# como está, então `Conteudo` viraria o campo `Conteudo`. Como
+// este projeto se refere aos campos em minúsculo (em SearchOptions.Select, no
+// VectorizedQuery.Fields e na configuração semântica), cada propriedade declara
+// o nome explicitamente com [JsonPropertyName].
+//
+// O mesmo atributo vale para os dois lados: o FieldBuilder o usa para nomear o
+// campo na criação do índice, e o serializador do SearchClient o usa ao gravar
+// e ao ler documentos. Um nome só, em um lugar só.
 // =============================================================================
+
+using System.Text.Json.Serialization;
 
 using Azure.Search.Documents.Indexes;
 
@@ -24,14 +32,17 @@ public sealed class Chunk
 {
     /// <summary>Chave do índice. Só aceita letras, dígitos, _, - e =.</summary>
     [SimpleField(IsKey = true, IsFilterable = true)]
+    [JsonPropertyName("id")]
     public string Id { get; set; } = "";
 
     /// <summary>Nome do arquivo de origem — é o que aparece na citação.</summary>
     [SearchableField(IsFilterable = true, IsFacetable = true)]
+    [JsonPropertyName("documento")]
     public string Documento { get; set; } = "";
 
     /// <summary>Título do documento, para dar contexto ao trecho.</summary>
     [SearchableField(AnalyzerName = "pt-BR.microsoft")]
+    [JsonPropertyName("titulo")]
     public string Titulo { get; set; } = "";
 
     /// <summary>
@@ -44,6 +55,7 @@ public sealed class Chunk
     /// Num caso real seria o endereço do documento na intranet ou no SharePoint.
     /// </summary>
     [SimpleField]
+    [JsonPropertyName("url")]
     public string Url { get; set; } = "";
 
     /// <summary>
@@ -52,12 +64,18 @@ public sealed class Chunk
     /// é ele que faz "reembolsos" casar com "reembolso".
     /// </summary>
     [SearchableField(AnalyzerName = "pt-BR.microsoft")]
+    [JsonPropertyName("conteudo")]
     public string Conteudo { get; set; } = "";
 
     /// <summary>
     /// O embedding do <see cref="Conteudo"/>. IsHidden = true porque a aplicação
     /// nunca lê este campo de volta: ele existe só para o serviço calcular
     /// similaridade. Trazer 1536 floats por resultado seria desperdício puro.
+    ///
+    /// O tipo PRECISA ser float[] (ou IReadOnlyList&lt;float&gt;). Com
+    /// ReadOnlyMemory&lt;float&gt; o FieldBuilder não reconhece um vetor: ele
+    /// ignora este atributo e gera um campo Edm.ComplexType com as propriedades
+    /// da struct (Length, IsEmpty, Span) — e aí a criação do índice falha.
     ///
     /// VectorSearchDimensions PRECISA bater com a dimensão do modelo de
     /// embeddings usado. Se você trocar o modelo, o índice tem de ser recriado.
@@ -66,5 +84,6 @@ public sealed class Chunk
         VectorSearchDimensions = IndiceRag.DimensoesDoEmbedding,
         VectorSearchProfileName = IndiceRag.PerfilVetorial,
         IsHidden = true)]
-    public ReadOnlyMemory<float> Vetor { get; set; }
+    [JsonPropertyName("vetor")]
+    public float[] Vetor { get; set; } = [];
 }

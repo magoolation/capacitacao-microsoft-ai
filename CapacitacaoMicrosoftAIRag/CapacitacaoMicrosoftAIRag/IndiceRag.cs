@@ -179,7 +179,7 @@ public sealed class IndiceRag
 
         for (var i = 0; i < chunks.Count; i++)
         {
-            chunks[i].Vetor = vetores[i].Vector;
+            chunks[i].Vetor = vetores[i].Vector.ToArray();
         }
 
         await _searchClient.UploadDocumentsAsync(chunks);

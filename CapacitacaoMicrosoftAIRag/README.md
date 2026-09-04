@@ -135,7 +135,7 @@ copy CapacitacaoMicrosoftAIRag\Properties\launchSettings.template.json `
 | `AZURE_TENANT_ID` | Recomendada | GUID do tenant |
 | `AZURE_TOKEN_CREDENTIALS` | Recomendada | Ex.: `AzureCliCredential` |
 
-> O endpoint do Foundry aqui é o `/openai/v1` — **não** o `/api/projects/<projeto>` das aulas 1, 2 e 3. É o mesmo recurso por outra porta: o `AIProjectClient` daquelas aulas entra pelo projeto, o `OpenAIClient` desta entra pela API compatível com a OpenAI. Reaproveitar o `launchSettings.json` de outra aula aqui dá `404`.
+> O endpoint do Foundry aqui é o `/openai/v1` — **não** o `/api/projects/<projeto>` das aulas 1, 2 e 3. É o mesmo recurso por outra porta: o `AIProjectClient` daquelas aulas entra pelo projeto, o `OpenAIClient` desta entra pela API compatível com a OpenAI. Reaproveitar o `launchSettings.json` de outra aula aqui dá `400 Missing required query parameter: api-version` — e não na largada: o índice chega a ser criado, o erro só aparece na primeira chamada ao modelo.
 
 ---
 
@@ -273,6 +273,10 @@ Depois do playground, volte ao console (`dotnet run`, opção 4) e mostre a linh
 ---
 
 ## Solução de problemas
+
+### `400 Missing required query parameter: api-version`
+
+O `FOUNDRY_ENDPOINT` está no formato das aulas 1, 2 e 3 (`.../api/projects/<projeto>`). Esta aula usa o `OpenAIClient`, que entra pelo `.../openai/v1` do mesmo recurso. O índice é criado normalmente; o erro só aparece na geração dos embeddings, porque é a primeira chamada ao modelo.
 
 ### `403 (Forbidden)` no Azure AI Search — no console
 
