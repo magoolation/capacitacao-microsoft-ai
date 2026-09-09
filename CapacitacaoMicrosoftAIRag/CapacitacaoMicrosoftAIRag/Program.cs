@@ -104,6 +104,15 @@ while (true)
         case "5": await RoteiroDeSalaAsync(); break;
         case "6": await indice.ApagarIndiceAsync(); Console.WriteLine("Índice apagado."); break;
         case "0": return;
+
+        // Console.ReadLine() devolve null quando a ENTRADA ACABA — entrada
+        // redirecionada que chegou ao fim, Ctrl+Z, terminal encerrado. Sem este
+        // caso, o null cai no `default` e o laço nunca termina: o programa fica
+        // imprimindo "Opção inválida" para sempre, a 100% de um núcleo, e o
+        // processo órfão ainda segura o .exe — o que faz o build seguinte falhar
+        // com MSB3021 "arquivo em uso", um erro sem relação aparente com o menu.
+        case null: return;
+
         default: Console.WriteLine("Opção inválida."); break;
     }
 }

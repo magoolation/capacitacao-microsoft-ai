@@ -96,12 +96,29 @@ else {
         --auth-options aadOrApiKey `
         --aad-auth-failure-mode http401WithBearerChallenge `
         --only-show-errors | Out-Null
+
+    # $ErrorActionPreference = 'Stop' NAO interrompe um executavel externo que
+    # devolve codigo de saida diferente de zero - so cmdlets do PowerShell. Sem
+    # esta checagem o script seguia adiante com $escopo vazio, todos os
+    # `az role assignment create` falhavam com "argument --scope: expected one
+    # argument", e mesmo assim ele imprimia "Papeis concedidos" e o bloco do
+    # launchSettings no fim - relatando sucesso depois de nao ter criado nada.
+    if ($LASTEXITCODE -ne 0) {
+        throw "Falha ao criar o servico '$SearchName'. Veja o erro do 'az' acima. " +
+              "Causa comum: a regiao '$Location' esta sem capacidade para o SKU '$Sku' " +
+              "(InsufficientResourcesAvailable) - rode de novo com outro -Location."
+    }
 }
 
 $escopo = az search service show `
     --name $SearchName `
     --resource-group $ResourceGroup `
     --query id --output tsv
+
+if ([string]::IsNullOrWhiteSpace($escopo)) {
+    throw "Nao consegui obter o id do servico '$SearchName' no grupo '$ResourceGroup'. " +
+          "Sem ele nao da para conceder papel nenhum."
+}
 
 # --- 3. Papéis ----------------------------------------------------------------
 $objectId = az ad signed-in-user show --query id --output tsv 2>$null

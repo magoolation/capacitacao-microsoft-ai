@@ -8,6 +8,7 @@ Versão em PDF dos decks da trilha **DotNet 10 LTS** — a que corresponde ao c�
 | 2 — Large Language Models e Engenharia de Prompts | 28 | [`CapacitacaoMicrosoftAILLMePrompts`](../CapacitacaoMicrosoftAILLMePrompts/) |
 | 3 — Microsoft Foundry: Recurso, Projeto, Deploy e SDK | 28 | [`CapacitacaoMicrosoftAIFoundrySDK`](../CapacitacaoMicrosoftAIFoundrySDK/) |
 | 4 — Conceitos de RAG, Embeddings e Azure AI Search | 27 | [`CapacitacaoMicrosoftAIRag`](../CapacitacaoMicrosoftAIRag/) |
+| 5 — Construindo soluções RAG end-to-end no Microsoft Foundry | 26 | [`CapacitacaoMicrosoftAIRagAvancado`](../CapacitacaoMicrosoftAIRagAvancado/) |
 
 Cada aula traz, além do conteúdo, um slide **"Como construir o projeto da aula"** logo após o hands-on e **cinco pares pergunta/resposta** de quiz — a pergunta com as quatro alternativas em um slide, a alternativa correta e a justificativa no seguinte. O gabarito também está nas notas do apresentador do arquivo `.pptx`.
 

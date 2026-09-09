@@ -1,0 +1,17 @@
+{
+  "profiles": {
+    "CapacitacaoMicrosoftAIRagAvancado": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "FOUNDRY_ENDPOINT": "https://<recurso>.services.ai.azure.com/openai/v1",
+        "FOUNDRY_MODEL": "<deployment-do-modelo-de-chat>",
+        "FOUNDRY_EMBEDDING_MODEL": "<deployment-do-modelo-de-embeddings>",
+        "FOUNDRY_JUDGE_MODEL": "<deployment-do-modelo-juiz (opcional; padrao: FOUNDRY_MODEL)>",
+        "SEARCH_ENDPOINT": "https://<servico-de-busca>.search.windows.net",
+        "SEARCH_INDEX": "politicas-internas",
+        "AZURE_TENANT_ID": "<guid-do-tenant>",
+        "AZURE_TOKEN_CREDENTIALS": "AzureCliCredential"
+      }
+    }
+  }
+}

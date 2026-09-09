@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!--
+      OPENAI001: o construtor OpenAIClient(AuthenticationPolicy, ...) esta marcado
+      como experimental. E por ele que passamos o token do Entra ID em vez de uma
+      chave de API. Sem esta linha o projeto NAO compila.
+    -->
+    <NoWarn>$(NoWarn);OPENAI001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      GRAFO DESTE PROJETO - pivo: OpenAI 2.12.0
+      =========================================
+        Microsoft.Extensions.AI                    10.9.0
+        Microsoft.Extensions.AI.OpenAI             10.9.0 -> OpenAI [2.12.0, 2.13.0)
+        Microsoft.Extensions.AI.Evaluation         10.9.0 -> so Abstractions (NAO traz OpenAI)
+        Microsoft.Extensions.AI.Evaluation.Quality 10.9.0 -> so Evaluation   (NAO traz OpenAI)
+        Azure.Search.Documents                     12.0.0 -> Azure.Core      (NAO traz OpenAI)
+
+      A aula 5 acrescenta DOIS pacotes ao grafo da aula 4 e mesmo assim o pivo nao
+      muda. Isso nao e sorte: os pacotes de avaliacao falam com o modelo pela
+      abstracao IChatClient, e por isso nao dependem de nenhum SDK de provedor.
+      E o argumento pratico a favor da abstracao - e vale dizer isso em sala.
+
+      As quatro versoes precisam ser IGUAIS (10.9.0). Evaluation.Quality 10.9.0
+      exige Evaluation 10.9.0 exato; misturar minors quebra no restore.
+
+      NAO adicione Azure.AI.Projects a este csproj: ele exige OpenAI 2.9.1, o NuGet
+      unificaria para 2.12.0 e o projeto quebraria em runtime.
+    -->
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+    <PackageReference Include="Azure.Search.Documents" Version="12.0.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.Evaluation" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.Evaluation.Quality" Version="10.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- O corpus viaja junto do binario: a demo roda sem depender de caminho relativo. -->
+    <None Update="Corpus\*.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -143,9 +143,11 @@ copy CapacitacaoMicrosoftAIRag\Properties\launchSettings.template.json `
 
 ```powershell
 az login --tenant <tenant-id>
-cd CapacitacaoMicrosoftAIRag
+cd CapacitacaoMicrosoftAIRag\CapacitacaoMicrosoftAIRag
 dotnet run
 ```
+
+> **Repare no caminho duplicado.** A pasta de fora é a da **solução** (só tem o `.slnx`); a de dentro é a do **projeto**. Rodar `dotnet run` na de fora falha com *"Não foi possível localizar um projeto para executar"*.
 
 ```
 === Capacitação Microsoft AI — RAG ===
