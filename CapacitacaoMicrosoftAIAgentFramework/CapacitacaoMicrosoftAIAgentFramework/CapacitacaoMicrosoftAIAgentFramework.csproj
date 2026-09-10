@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!--
+      OPENAI001: a ponte entre o cliente do Foundry e a abstracao (o mesmo
+      caminho que AsIChatClient percorria nas aulas 1 a 3) continua marcada
+      como experimental. Sem esta linha o SDK promove o aviso a erro.
+    -->
+    <NoWarn>$(NoWarn);OPENAI001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      GRAFO DESTE PROJETO - dono unico: Microsoft.Agents.AI.Foundry
+      =============================================================
+        Microsoft.Agents.AI.Foundry (prerelease)
+          -> Microsoft.Agents.AI               (o framework: AIAgent, AgentSession)
+          -> Microsoft.Agents.AI.OpenAI        (ChatClientAgent sobre Responses API)
+          -> Azure.AI.Projects                 (AIProjectClient - o Foundry SDK)
+          -> Microsoft.Extensions.AI(.OpenAI)  (IChatClient, AIFunctionFactory)
+          -> OpenAI                            (o pivo, na versao que o MAF testou)
+        Azure.Identity 1.21.0                  (DefaultAzureCredential - so Azure.Core)
+
+      Esta aula inverte a regra das aulas 1 a 3. La, NOS escolhiamos as versoes
+      de Azure.AI.* e Microsoft.Extensions.AI* para que apontassem para o mesmo
+      pivo de OpenAI. Aqui quem faz essa escolha e o Agent Framework: ele declara
+      os quatro pacotes nas versoes com que foi compilado e testado.
+
+      Por isso este csproj NAO declara Azure.AI.Projects, Azure.AI.Extensions.OpenAI,
+      Microsoft.Extensions.AI nem Microsoft.Extensions.AI.OpenAI. Declarar qualquer
+      um deles a mao - por exemplo copiando as linhas da aula 3 - faz o NuGet
+      unificar o OpenAI para uma versao diferente da que o MAF espera, e o projeto
+      compila e quebra em runtime com MissingMethodException. O
+      Directory.Build.props da raiz promove NU1608 a erro justamente para que
+      esse conflito apareca no restore.
+
+      A versao e flutuante (1.*-*) porque o pacote Foundry ainda e prerelease e
+      recebe builds novos com frequencia. Depois do primeiro restore, fixe a
+      versao resolvida (dotnet list package) para que a turma toda compile o
+      mesmo grafo.
+
+      Diagnostico:  dotnet nuget why <este csproj> OpenAI
+    -->
+    <PackageReference Include="Microsoft.Agents.AI.Foundry" Version="1.*-*" />
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+  </ItemGroup>
+
+</Project>

@@ -2,7 +2,7 @@
 
 Exemplos em .NET do treinamento. Cada aula é uma **solução independente**, com seu próprio README, e conversa com um modelo hospedado no **Microsoft Foundry** autenticando por **Entra ID**.
 
-As aulas 1 a 3 usam a mesma montagem: o **Foundry SDK** (`Azure.AI.Projects`) para chegar ao projeto com a identidade do Entra ID, e **`Microsoft.Extensions.AI`** (`IChatClient`) como camada de programação. Mesmo endpoint, mesmos pacotes, mesmo pivô de `OpenAI` — o que muda de uma aula para outra é o que se faz com o `IChatClient`. As aulas **4 e 5** são o caso à parte: elas trocam o `Azure.AI.Projects` pelo `OpenAIClient` direto, e por isso pedem um endpoint e um pivô próprios — veja [Matriz de versões](#matriz-de-versões).
+As aulas 1 a 3 usam a mesma montagem: o **Foundry SDK** (`Azure.AI.Projects`) para chegar ao projeto com a identidade do Entra ID, e **`Microsoft.Extensions.AI`** (`IChatClient`) como camada de programação. Mesmo endpoint, mesmos pacotes, mesmo pivô de `OpenAI` — o que muda de uma aula para outra é o que se faz com o `IChatClient`. As aulas **4 e 5** são o caso à parte: elas trocam o `Azure.AI.Projects` pelo `OpenAIClient` direto, e por isso pedem um endpoint e um pivô próprios — veja [Matriz de versões](#matriz-de-versões). A aula **6** volta ao `AIProjectClient` e ao endpoint do projeto, mas deixa o **Microsoft Agent Framework** escolher todas as versões: o `.csproj` declara só `Microsoft.Agents.AI.Foundry` e `Azure.Identity`.
 
 > As soluções continuam separadas para que cada aluno abra uma aula por vez no Visual Studio, mas o grafo de pacotes hoje é idêntico nas aulas 1 a 3, e as aulas 4 e 5 compartilham o seu. Veja [Matriz de versões](#matriz-de-versões).
 
@@ -17,6 +17,7 @@ As aulas 1 a 3 usam a mesma montagem: o **Foundry SDK** (`Azure.AI.Projects`) pa
 | 3 | **Foundry SDK com streaming** | `GetStreamingResponseAsync`, resposta token a token | [`CapacitacaoMicrosoftAIFoundrySDK`](CapacitacaoMicrosoftAIFoundrySDK/) |
 | 4 | **RAG com Azure AI Search** | Chunking, embeddings, busca híbrida, resposta com citações | [`CapacitacaoMicrosoftAIRag`](CapacitacaoMicrosoftAIRag/) |
 | 5 | **RAG end-to-end com avaliação** | Groundedness, relevance, retrieval, varredura de top-k, relatório | [`CapacitacaoMicrosoftAIRagAvancado`](CapacitacaoMicrosoftAIRagAvancado/) |
+| 6 | **Primeiro agente com o Agent Framework** | `AsAIAgent`, `AgentSession`, `RunAsync` × `RunStreamingAsync`, um só dono do grafo de pacotes | [`CapacitacaoMicrosoftAIAgentFramework`](CapacitacaoMicrosoftAIAgentFramework/) |
 
 ---
 
@@ -90,6 +91,20 @@ O mesmo corpus e o mesmo índice da aula 4 — o que muda é que agora tudo é *
 
 A aula acrescenta dois pacotes ao grafo da aula 4 — `Microsoft.Extensions.AI.Evaluation` e `.Quality` — e **o pivô do `OpenAI` não muda**, porque os avaliadores falam com o modelo por `IChatClient` e não dependem de SDK de provedor nenhum.
 
+### Aula 6 — Primeiro agente com o Microsoft Agent Framework
+
+📖 [README da aula](CapacitacaoMicrosoftAIAgentFramework/README.md) · 💻 [`Program.cs`](CapacitacaoMicrosoftAIAgentFramework/CapacitacaoMicrosoftAIAgentFramework/Program.cs)
+
+O mesmo `AIProjectClient` das aulas 1 a 3 — com um agente do outro lado, em vez de um `IChatClient`.
+
+| # | Exemplo | O que demonstra |
+|---|---|---|
+| 1 | `AsAIAgent` | Modelo + nome + instructions viram um `AIAgent` em uma chamada; nada é criado no serviço |
+| 2 | `RunAsync` sem sessão | Duas perguntas encadeadas — o agente **não** lembra da primeira |
+| 3 | `AgentSession` + `RunStreamingAsync` | A mesma sessão em todas as chamadas dá memória; a resposta chega token a token |
+
+A aula declara **dois pacotes** e deixa o Agent Framework ser o único dono do grafo — `Azure.AI.Projects` e `Microsoft.Extensions.AI*` chegam transitivamente, nas versões que o MAF testou. Declarar qualquer um deles à mão recria o `MissingMethodException`.
+
 ---
 
 ## O fio entre as aulas
@@ -159,7 +174,14 @@ A **aula 5** herda esse grafo e acrescenta dois pacotes — **sem mexer no pivô
 
 Vale reparar no motivo, porque ele é o argumento prático a favor da abstração: **os avaliadores falam com o modelo por `IChatClient`**, e por isso não dependem de SDK de provedor nenhum. Um pacote que só conhece a abstração não tem como brigar pelo pivô.
 
-**A regra:** um `.csproj` = um pivô de `OpenAI`. Misturar `Azure.AI.*` com `Microsoft.Extensions.AI.OpenAI` é possível — é o que fazemos — mas só conferindo os dois pinos antes.
+A **aula 6** resolve o problema de um terceiro jeito: **delega a escolha**. `Microsoft.Agents.AI.Foundry` declara `Azure.AI.Projects`, `Microsoft.Extensions.AI`, `Microsoft.Extensions.AI.OpenAI` e `OpenAI` nas versões com que foi compilado; o `.csproj` só declara ele e o `Azure.Identity`. O pacote ainda é prerelease, por isso o `.csproj` usa `1.*-*` — fixe a versão resolvida (`dotnet list package`) antes de distribuir para a turma.
+
+| Pacote declarado | Versão | Pivô `OpenAI` |
+|---|---|---|
+| `Microsoft.Agents.AI.Foundry` | prerelease (`1.*-*`) | o que o MAF trouxer — **não declare outro** |
+| `Azure.Identity` | 1.21.0 | — |
+
+**A regra:** um `.csproj` = um pivô de `OpenAI`. Misturar `Azure.AI.*` com `Microsoft.Extensions.AI.OpenAI` é possível — é o que fazemos nas aulas 1 a 3 — mas só conferindo os dois pinos antes. Quando um framework já fez essa conferência, como na aula 6, não a refaça por cima dele.
 
 O pino de `OpenAI` por versão do `Microsoft.Extensions.AI.OpenAI` é o que amarra a escolha:
 
@@ -182,7 +204,7 @@ Por isso os `dotnet add package` deste repositório levam sempre `--version` exp
 dotnet --version   # deve responder 10.x
 ```
 
-**2. Compile as cinco soluções antes da aula:**
+**2. Compile as seis soluções antes da aula:**
 
 ```powershell
 dotnet build CapacitacaoMicrosoftAIFundamentos\CapacitacaoMicrosoftAIFundamentos.slnx
@@ -190,6 +212,7 @@ dotnet build CapacitacaoMicrosoftAILLMePrompts\CapacitacaoMicrosoftAILLMePrompts
 dotnet build CapacitacaoMicrosoftAIFoundrySDK\CapacitacaoMicrosoftAI.FoundrySDK.slnx
 dotnet build CapacitacaoMicrosoftAIRag\CapacitacaoMicrosoftAIRag.slnx
 dotnet build CapacitacaoMicrosoftAIRagAvancado\CapacitacaoMicrosoftAIRagAvancado.slnx
+dotnet build CapacitacaoMicrosoftAIAgentFramework\CapacitacaoMicrosoftAIAgentFramework.slnx
 ```
 
 **3. Configure o `launchSettings.json` de cada aula** a partir do `launchSettings.template.json` correspondente — ele não é versionado. Nas aulas 1, 2 e 3 o endpoint é o mesmo e só o nome do perfil muda; a aula 4 pede o caminho `/openai/v1` do mesmo recurso e mais três variáveis, para o modelo de embeddings e o Azure AI Search.
@@ -218,7 +241,9 @@ A **aula 4** pede, além disso: um segundo deployment no mesmo recurso, de **emb
 
 A **aula 5** não pede nada de novo: mesmo recurso, mesmos dois deployments, **mesmo índice**. Se a aula 4 rodou, a aula 5 roda.
 
-Cada projeto lê a configuração de `Properties/launchSettings.json`, que **não é versionado**. Crie o seu a partir do `launchSettings.template.json` da aula correspondente — as aulas 1, 2 e 3 pedem as mesmas quatro variáveis, com os mesmos valores.
+A **aula 6** volta aos pré-requisitos das aulas 1 a 3: o mesmo endpoint do projeto e o papel `Foundry User`. O `launchSettings.json` da aula 3 serve, trocando o nome do perfil.
+
+Cada projeto lê a configuração de `Properties/launchSettings.json`, que **não é versionado**. Crie o seu a partir do `launchSettings.template.json` da aula correspondente — as aulas 1, 2, 3 e 6 pedem as mesmas quatro variáveis, com os mesmos valores.
 
 ```powershell
 cd CapacitacaoMicrosoftAILLMePrompts\CapacitacaoMicrosoftAILLMePrompts
