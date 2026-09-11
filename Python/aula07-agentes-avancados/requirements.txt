@@ -1,0 +1,3 @@
+agent-framework==1.17.*
+azure-identity==1.*
+python-dotenv==1.*

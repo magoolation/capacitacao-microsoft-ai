@@ -10,8 +10,9 @@ Exemplos em **Python 3.12+** das mesmas aulas da trilha .NET deste repositório.
 | 4 | **RAG com Azure AI Search** | Chunking, embeddings, keyword × vetorial × híbrida com reranking, resposta com citações | [`aula04-rag`](aula04-rag/) |
 | 5 | **RAG end-to-end com avaliação** | Groundedness, relevance, retrieval, similarity; varredura de top-k; relatório em Markdown | [`aula05-rag-avancado`](aula05-rag-avancado/) |
 | 6 | **Primeiro agente com o Agent Framework** | `Agent` + `FoundryChatClient`, `run` × `run(stream=True)`, `AgentSession` | [`aula06-agent-framework`](aula06-agent-framework/) |
+| 7 | **Agentes avançados** | Function calling com 4 tools, `@tool(approval_mode="always_require")` (HITL), `MCPStreamableHTTPTool` (Microsoft Learn), `SequentialBuilder` | [`aula07-agentes-avancados`](aula07-agentes-avancados/) |
 
-As aulas 7 e 8 serão adicionadas junto com as versões .NET.
+A aula 8 será adicionada junto com a versão .NET.
 
 ## O fio entre as aulas
 

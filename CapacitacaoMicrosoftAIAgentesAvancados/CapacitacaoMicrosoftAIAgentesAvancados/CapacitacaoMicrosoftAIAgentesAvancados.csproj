@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!--
+      OPENAI001: a ponte entre o cliente do Foundry e a abstracao continua marcada
+      como experimental. Sem esta linha o SDK promove o aviso a erro.
+    -->
+    <NoWarn>$(NoWarn);OPENAI001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      GRAFO DESTE PROJETO - dono unico: o Microsoft Agent Framework
+      ============================================================
+        Microsoft.Agents.AI.Foundry   (prerelease) -> Microsoft.Agents.AI, Azure.AI.Projects,
+                                                      Microsoft.Extensions.AI(.OpenAI), OpenAI
+        Microsoft.Agents.AI.Workflows (prerelease) -> Microsoft.Agents.AI (mesma linha de versao)
+        Azure.Identity 1.21.0                       (DefaultAzureCredential - so Azure.Core)
+
+      A regra e a mesma da aula 6: deixe o Agent Framework escolher as versoes.
+      NAO declare Azure.AI.Projects, Azure.AI.Extensions.OpenAI, Microsoft.Extensions.AI
+      nem OpenAI - declarar qualquer um deles a mao recria o MissingMethodException.
+
+      O pacote Workflows e o unico acrescimo em relacao a aula 6. Ele vem da mesma
+      release do framework e nao traz o pacote OpenAI, entao nao mexe no pivo.
+
+      Depois do primeiro restore, fixe as versoes resolvidas (dotnet list package)
+      para que a turma toda compile o mesmo grafo.
+
+      Diagnostico:  dotnet nuget why <este csproj> OpenAI
+    -->
+    <PackageReference Include="Microsoft.Agents.AI.Foundry" Version="1.*-*" />
+    <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="1.*-*" />
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+  </ItemGroup>
+
+</Project>
