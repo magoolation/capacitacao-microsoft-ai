@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);OPENAI001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      GRAFO DESTE PROJETO - dono unico: o Microsoft Agent Framework
+      ============================================================
+        Microsoft.Agents.AI.Foundry (prerelease)   -> Microsoft.Agents.AI, Azure.AI.Projects,
+                                                      Microsoft.Extensions.AI(.OpenAI), OpenAI
+        Azure.Identity 1.21.0                       (DefaultAzureCredential)
+
+      Telemetria (nenhum deles traz o pacote OpenAI):
+        OpenTelemetry                               (TracerProvider)
+        Azure.Monitor.OpenTelemetry.Exporter        (exporta para o Application Insights)
+
+      Avaliacao (falam com o modelo por IChatClient - tambem nao trazem OpenAI):
+        Microsoft.Extensions.AI.Evaluation
+        Microsoft.Extensions.AI.Evaluation.Quality
+
+      ATENCAO ao ultimo par: eles dependem de Microsoft.Extensions.AI.Abstractions e
+      precisam bater com a versao que o MAF resolveu. Se o restore acusar NU1605/NU1608,
+      alinhe a versao dos dois pacotes de avaliacao a de Microsoft.Extensions.AI exibida
+      por `dotnet list package` com a opcao include-transitive. Nao mexa no MAF.
+      (Um comentario XML nao pode conter dois hifens seguidos, por isso a opcao
+      nao aparece escrita aqui.)
+
+      Diagnostico:  dotnet nuget why <este csproj> OpenAI
+    -->
+    <PackageReference Include="Microsoft.Agents.AI.Foundry" Version="1.*-*" />
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+
+    <PackageReference Include="OpenTelemetry" Version="1.*" />
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.*" />
+
+    <PackageReference Include="Microsoft.Extensions.AI.Evaluation" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.Evaluation.Quality" Version="10.9.0" />
+  </ItemGroup>
+
+</Project>

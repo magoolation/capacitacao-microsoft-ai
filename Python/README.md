@@ -10,8 +10,9 @@ Exemplos em **Python 3.12+** das mesmas aulas da trilha .NET deste repositório.
 | 4 | **RAG com Azure AI Search** | Chunking, embeddings, keyword × vetorial × híbrida com reranking, resposta com citações | [`aula04-rag`](aula04-rag/) |
 | 5 | **RAG end-to-end com avaliação** | Groundedness, relevance, retrieval, similarity; varredura de top-k; relatório em Markdown | [`aula05-rag-avancado`](aula05-rag-avancado/) |
 | 6 | **Primeiro agente com o Agent Framework** | `Agent` + `FoundryChatClient`, `run` × `run(stream=True)`, `AgentSession` | [`aula06-agent-framework`](aula06-agent-framework/) |
+| 8 | **Avaliação, observabilidade e RAI** | Tracing (`enable_instrumentation` + `configure_azure_monitor`), `azure-ai-evaluation` sobre o agente, prompt injection sem e com escudo + HITL | [`aula08-observabilidade`](aula08-observabilidade/) |
 
-As aulas 7 e 8 serão adicionadas junto com as versões .NET.
+A aula 7 será adicionada junto com a versão .NET.
 
 ## O fio entre as aulas
 
@@ -68,7 +69,8 @@ Sempre dentro do venv: `pip list` mostra o que está realmente instalado.
 | `FOUNDRY_ENDPOINT` | todas | `https://<recurso>.services.ai.azure.com/api/projects/<projeto>` |
 | `FOUNDRY_MODEL` | todas | nome do **deployment** do modelo de chat |
 | `FOUNDRY_EMBEDDING_MODEL` | 4, 5 | nome do deployment de embeddings (1536 dimensões: `text-embedding-3-small`) |
-| `FOUNDRY_JUDGE_MODEL` | 5 | deployment do modelo juiz (opcional; padrão: `FOUNDRY_MODEL`) |
+| `FOUNDRY_JUDGE_MODEL` | 5, 8 | deployment do modelo juiz (opcional; padrão: `FOUNDRY_MODEL`) |
+| `APPLICATIONINSIGHTS_CONNECTION_STRING` | 8 | opcional; se vazia, o programa pergunta ao projeto Foundry |
 | `SEARCH_ENDPOINT` | 4, 5 | `https://<servico>.search.windows.net` |
 | `SEARCH_INDEX` | 4, 5 | nome do índice (padrão: `politicas-internas`) |
 | `AZURE_TENANT_ID` | todas | GUID do tenant — evita o `DefaultAzureCredential` escolher o tenant errado |
