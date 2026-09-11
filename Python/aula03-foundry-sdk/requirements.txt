@@ -1,0 +1,7 @@
+azure-ai-projects==2.5.0
+azure-identity==1.*
+openai==3.*
+python-dotenv==1.*
+tenacity==9.*
+rich==14.*
+tiktoken==0.*

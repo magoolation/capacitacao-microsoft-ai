@@ -1,0 +1,6 @@
+azure-ai-projects==2.5.0
+azure-identity==1.*
+azure-search-documents==12.*
+azure-ai-evaluation==1.18.*
+openai==3.*
+python-dotenv==1.*

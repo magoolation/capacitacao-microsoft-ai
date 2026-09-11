@@ -1,6 +1,6 @@
 # Capacitação Microsoft AI
 
-Exemplos em .NET do treinamento. Cada aula é uma **solução independente**, com seu próprio README, e conversa com um modelo hospedado no **Microsoft Foundry** autenticando por **Entra ID**.
+Exemplos do treinamento em **.NET** e em **Python**. Cada aula é uma **solução .NET independente**, com seu próprio README, e tem a versão Python correspondente na pasta [`Python/`](Python/). Todas conversam com um modelo hospedado no **Microsoft Foundry** autenticando por **Entra ID**.
 
 As aulas 1 a 3 usam a mesma montagem: o **Foundry SDK** (`Azure.AI.Projects`) para chegar ao projeto com a identidade do Entra ID, e **`Microsoft.Extensions.AI`** (`IChatClient`) como camada de programação. Mesmo endpoint, mesmos pacotes, mesmo pivô de `OpenAI` — o que muda de uma aula para outra é o que se faz com o `IChatClient`. As aulas **4 e 5** são o caso à parte: elas trocam o `Azure.AI.Projects` pelo `OpenAIClient` direto, e por isso pedem um endpoint e um pivô próprios — veja [Matriz de versões](#matriz-de-versões). A aula **6** volta ao `AIProjectClient` e ao endpoint do projeto, mas deixa o **Microsoft Agent Framework** escolher todas as versões: o `.csproj` declara só `Microsoft.Agents.AI.Foundry` e `Azure.Identity`.
 
@@ -18,6 +18,25 @@ As aulas 1 a 3 usam a mesma montagem: o **Foundry SDK** (`Azure.AI.Projects`) pa
 | 4 | **RAG com Azure AI Search** | Chunking, embeddings, busca híbrida, resposta com citações | [`CapacitacaoMicrosoftAIRag`](CapacitacaoMicrosoftAIRag/) |
 | 5 | **RAG end-to-end com avaliação** | Groundedness, relevance, retrieval, varredura de top-k, relatório | [`CapacitacaoMicrosoftAIRagAvancado`](CapacitacaoMicrosoftAIRagAvancado/) |
 | 6 | **Primeiro agente com o Agent Framework** | `AsAIAgent`, `AgentSession`, `RunAsync` × `RunStreamingAsync`, um só dono do grafo de pacotes | [`CapacitacaoMicrosoftAIAgentFramework`](CapacitacaoMicrosoftAIAgentFramework/) |
+
+A versão Python de cada aula está em `Python/aula0N-<nome>/` — veja [Trilha Python](#trilha-python).
+
+---
+
+## Trilha Python
+
+A pasta [`Python/`](Python/) traz as mesmas aulas em **Python 3.12+**, com a mesma pedagogia: uma pasta por aula, `main.py`, `requirements.txt` com versões fixadas e `.env.example`.
+
+| # | Aula | Pasta |
+|---|---|---|
+| 1 | Fundamentos — `AIProjectClient`, cliente OpenAI, contexto no serviço (`previous_response_id`) | [`Python/aula01-fundamentos`](Python/aula01-fundamentos/) |
+| 2 | LLM e Prompts — contexto no cliente, few-shot, structured output com Pydantic | [`Python/aula02-llm-e-prompts`](Python/aula02-llm-e-prompts/) |
+| 3 | Foundry SDK com streaming — `stream=True`, retry com `tenacity`, `rich`, `tiktoken` | [`Python/aula03-foundry-sdk`](Python/aula03-foundry-sdk/) |
+| 4 | RAG com Azure AI Search — chunking, embeddings, keyword × vetorial × híbrida | [`Python/aula04-rag`](Python/aula04-rag/) |
+| 5 | RAG end-to-end com avaliação — `azure-ai-evaluation`, varredura de top-k, relatório | [`Python/aula05-rag-avancado`](Python/aula05-rag-avancado/) |
+| 6 | Primeiro agente com o Agent Framework — `Agent` + `FoundryChatClient`, `AgentSession` | [`Python/aula06-agent-framework`](Python/aula06-agent-framework/) |
+
+**A diferença que vale a aula:** em Python não existe o problema do pivô `OpenAI` descrito em [Matriz de versões](#matriz-de-versões). `azure-ai-projects`, `openai`, `azure-search-documents`, `azure-ai-evaluation` e `agent-framework` convivem no mesmo ambiente virtual, e **um único `FOUNDRY_ENDPOINT` (o do projeto) serve todas as aulas** — a versão Python das aulas 4 e 5 usa o mesmo `AIProjectClient` das anteriores. O que continua valendo nas duas trilhas é a outra regra: **fixe as versões**. Detalhes, variáveis e solução de problemas no [README da trilha](Python/README.md).
 
 ---
 
