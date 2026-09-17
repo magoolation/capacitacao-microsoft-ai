@@ -19,6 +19,7 @@ As aulas 1 a 3 usam a mesma montagem: o **Foundry SDK** (`Azure.AI.Projects`) pa
 | 5 | **RAG end-to-end com avaliação** | Groundedness, relevance, retrieval, varredura de top-k, relatório | [`CapacitacaoMicrosoftAIRagAvancado`](CapacitacaoMicrosoftAIRagAvancado/) |
 | 6 | **Primeiro agente com o Agent Framework** | `AsAIAgent`, `AgentSession`, `RunAsync` × `RunStreamingAsync`, um só dono do grafo de pacotes | [`CapacitacaoMicrosoftAIAgentFramework`](CapacitacaoMicrosoftAIAgentFramework/) |
 | 7 | **Agentes avançados** | Function calling com 4 tools, aprovação humana (`ApprovalRequiredAIFunction`), hosted MCP (Microsoft Learn), workflow sequencial | [`CapacitacaoMicrosoftAIAgentesAvancados`](CapacitacaoMicrosoftAIAgentesAvancados/) |
+| 8 | **Avaliação, observabilidade e Responsible AI** | Tracing OpenTelemetry → Application Insights, avaliação do agente com juiz (relevance, coherence, equivalence), prompt injection sem e com escudo + HITL | [`CapacitacaoMicrosoftAIObservabilidade`](CapacitacaoMicrosoftAIObservabilidade/) |
 
 A versão Python de cada aula está em `Python/aula0N-<nome>/` — veja [Trilha Python](#trilha-python).
 
@@ -37,6 +38,7 @@ A pasta [`Python/`](Python/) traz as mesmas aulas em **Python 3.12+**, com a mes
 | 5 | RAG end-to-end com avaliação — `azure-ai-evaluation`, varredura de top-k, relatório | [`Python/aula05-rag-avancado`](Python/aula05-rag-avancado/) |
 | 6 | Primeiro agente com o Agent Framework — `Agent` + `FoundryChatClient`, `AgentSession` | [`Python/aula06-agent-framework`](Python/aula06-agent-framework/) |
 | 7 | Agentes avançados — tools, `@tool(approval_mode="always_require")`, `MCPStreamableHTTPTool`, `SequentialBuilder` | [`Python/aula07-agentes-avancados`](Python/aula07-agentes-avancados/) |
+| 8 | Avaliação, observabilidade e RAI — `enable_instrumentation` + Azure Monitor, `azure-ai-evaluation` sobre o agente, prompt injection com escudo + HITL | [`Python/aula08-observabilidade`](Python/aula08-observabilidade/) |
 
 **A diferença que vale a aula:** em Python não existe o problema do pivô `OpenAI` descrito em [Matriz de versões](#matriz-de-versões). `azure-ai-projects`, `openai`, `azure-search-documents`, `azure-ai-evaluation` e `agent-framework` convivem no mesmo ambiente virtual, e **um único `FOUNDRY_ENDPOINT` (o do projeto) serve todas as aulas** — a versão Python das aulas 4 e 5 usa o mesmo `AIProjectClient` das anteriores. O que continua valendo nas duas trilhas é a outra regra: **fixe as versões**. Detalhes, variáveis e solução de problemas no [README da trilha](Python/README.md).
 
