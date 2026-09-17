@@ -39,8 +39,8 @@
     <PackageReference Include="OpenTelemetry" Version="1.*" />
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.*" />
 
-    <PackageReference Include="Microsoft.Extensions.AI.Evaluation" Version="10.9.0" />
-    <PackageReference Include="Microsoft.Extensions.AI.Evaluation.Quality" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.Evaluation" Version="10.10.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.Evaluation.Quality" Version="10.10.0" />
   </ItemGroup>
 
 </Project>

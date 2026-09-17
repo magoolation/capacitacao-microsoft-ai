@@ -41,7 +41,7 @@ dotnet build
 | `Azure.Identity` | 1.21.0 | `DefaultAzureCredential` |
 | `OpenTelemetry` | 1.x | `TracerProvider`, processadores |
 | `Azure.Monitor.OpenTelemetry.Exporter` | 1.x | Exporta traces para o Application Insights |
-| `Microsoft.Extensions.AI.Evaluation` / `.Quality` | 10.9.0 | Avaliadores com modelo juiz (falam por `IChatClient`; não trazem `OpenAI`) |
+| `Microsoft.Extensions.AI.Evaluation` / `.Quality` | 10.10.0 | Avaliadores com modelo juiz (falam por `IChatClient`; não trazem `OpenAI`) |
 
 **Atenção ao par de avaliação:** ele depende de `Microsoft.Extensions.AI.Abstractions` e precisa bater com a versão que o MAF resolveu. Se o restore acusar `NU1605`/`NU1608`, alinhe a versão dos dois pacotes de avaliação à de `Microsoft.Extensions.AI` exibida por `dotnet list package --include-transitive`. Não mexa no MAF.
 
